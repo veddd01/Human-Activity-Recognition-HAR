@@ -12,8 +12,7 @@ This project demonstrates Human Activity Recognition using mobile sensor data, i
 - `presentation/`: Project slides and images
 
 ## Models Used
-- SVM, KNN
-- CNN, RNN (LSTM)
+- SVM, KNN, RandomForest
 
 ## Results
 - Achieved ~94% accuracy using UCI HAR dataset
