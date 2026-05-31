@@ -1,6 +1,3 @@
-# Human-Activity-Recognition-HAR
-A project on Human Activity Recognition using mobile sensor data and machine learning models like SVM, KNN, CNN, and LSTM.
-
 # Human Activity Recognition (HAR)
 
 This project demonstrates Human Activity Recognition using mobile sensor data, including accelerometer, gyroscope, and magnetometer inputs.
