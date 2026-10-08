@@ -8,6 +8,7 @@ import pytest
 # Use a test-only JWT secret and in-memory database
 os.environ.setdefault("HAR_JWT_SECRET", "test-secret-not-for-production-min32bytes")
 os.environ.setdefault("HAR_SEED_DEMO_USERS", "true")
+os.environ.setdefault("HAR_RATE_LIMIT_ENABLED", "false")
 
 from fastapi.testclient import TestClient
 
