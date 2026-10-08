@@ -406,11 +406,16 @@ except ImportError:
 
 
 def rate_limit(limit_string: str):
-    """Apply rate limiting if slowapi is available, otherwise no-op."""
-    if limiter is not None:
+    """Apply rate limiting in normal environments, but disable it for tests."""
+    rate_limits_enabled = os.getenv("HAR_RATE_LIMIT_ENABLED", "true").lower() not in {
+        "0", "false", "no", "off"
+    }
+    if limiter is not None and rate_limits_enabled:
         return limiter.limit(limit_string)
+
     def noop(func):
         return func
+
     return noop
 
 
