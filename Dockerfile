@@ -6,7 +6,7 @@
 # API service.
 # ============================================================================
 
-FROM python:3.10-slim AS base
+FROM python:3.11-slim AS base
 
 # Prevent Python from writing .pyc files and enable unbuffered stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1 \
