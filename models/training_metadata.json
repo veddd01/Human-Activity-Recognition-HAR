@@ -1,0 +1,62 @@
+[
+  {
+    "model_name": "Logistic Regression",
+    "accuracy": 0.961317,
+    "training_time_s": 8.49,
+    "file": "logistic_regression.pkl"
+  },
+  {
+    "model_name": "Decision Tree",
+    "accuracy": 0.854768,
+    "training_time_s": 3.66,
+    "file": "decision_tree.pkl"
+  },
+  {
+    "model_name": "Random Forest",
+    "accuracy": 0.924669,
+    "training_time_s": 2.42,
+    "file": "random_forest.pkl"
+  },
+  {
+    "model_name": "Gradient Boosting",
+    "accuracy": 0.930098,
+    "training_time_s": 1410.07,
+    "file": "gradient_boosting.pkl"
+  },
+  {
+    "model_name": "SVM",
+    "accuracy": 0.950458,
+    "training_time_s": 13.0,
+    "file": "svm.pkl"
+  },
+  {
+    "model_name": "XGBoost",
+    "accuracy": 0.932474,
+    "training_time_s": 25.86,
+    "file": "xgboost.pkl"
+  },
+  {
+    "model_name": "LightGBM",
+    "accuracy": 0.941975,
+    "training_time_s": 5.0,
+    "file": "lightgbm.pkl"
+  },
+  {
+    "model_name": "Ensemble",
+    "accuracy": 0.958263,
+    "training_time_s": 5.0,
+    "file": "ensemble.pkl"
+  },
+  {
+    "model_name": "Neural Network",
+    "accuracy": 0.929759,
+    "training_time_s": 15.2,
+    "file": "nn_model.keras"
+  },
+  {
+    "model_name": "CNN-LSTM",
+    "accuracy": 0.878521,
+    "training_time_s": 94.55,
+    "file": "cnn_lstm.keras"
+  }
+]

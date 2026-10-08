@@ -1,0 +1,47 @@
+# ============================================================================
+# HAR Project — Pinned Production Dependencies
+# ============================================================================
+# These versions match the environment used to train and serialize the ML
+# models.  Do NOT upgrade scikit-learn, xgboost, lightgbm, or tensorflow
+# without retraining, as pickle/keras deserialization is version-sensitive.
+# ============================================================================
+
+# ── Core ML / Data ───────────────────────────────────────────────────────────
+numpy>=1.26,<3.0
+pandas>=2.1,<3.0
+scikit-learn>=1.5,<2.0
+joblib>=1.3,<2.0
+xgboost>=2.0,<3.0
+lightgbm>=4.0,<5.0
+tensorflow>=2.16,<3.0
+
+# ── Web Framework ────────────────────────────────────────────────────────────
+fastapi>=0.100,<1.0
+uvicorn[standard]>=0.22,<1.0
+pydantic>=2.0,<3.0
+slowapi>=0.1.9,<1.0
+websockets>=12.0,<15.0
+python-multipart>=0.0.6,<1.0
+
+# ── Database ─────────────────────────────────────────────────────────────────
+sqlalchemy>=2.0,<3.0
+
+# ── Authentication ───────────────────────────────────────────────────────────
+pyjwt>=2.8,<3.0
+bcrypt>=4.0,<6.0
+
+# ── Dashboard ────────────────────────────────────────────────────────────────
+streamlit>=1.30,<2.0
+plotly>=5.18,<6.0
+
+# ── Visualization (training/evaluation only) ─────────────────────────────────
+matplotlib>=3.8,<4.0
+seaborn>=0.13,<1.0
+
+# ── HTTP / Testing ───────────────────────────────────────────────────────────
+requests>=2.31,<3.0
+httpx>=0.25,<1.0
+pytest>=7.0,<9.0
+
+# ── Optional: Prometheus metrics ─────────────────────────────────────────────
+prometheus-fastapi-instrumentator>=6.0,<8.0

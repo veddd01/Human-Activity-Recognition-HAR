@@ -1,0 +1,70 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── IDE / Editor ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Data (large files — download via src/data.py) ────────────────────────────
+data/UCI_HAR_Dataset/
+data/*.zip
+test.csv
+HAR.rar
+
+# ── Evaluation plots (regenerated via src/evaluate.py) ────────────────────────
+models/*_cm.png
+models/*_feature_importance.png
+models/accuracy_comparison.png
+models/*_report.csv
+models/evaluation_results.json
+
+# ── Database ──────────────────────────────────────────────────────────────────
+*.db
+*.sqlite3
+
+# ── Environment / secrets ─────────────────────────────────────────────────────
+.env
+!.env.example
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+*.log
+parsed_notebook.py
+
+# ── Archives / stale artifacts ────────────────────────────────────────────────
+*.zip
+*.rar
+claude_chat.txt
+what_to_do.txt
+
+# ── Test / coverage ──────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Streamlit ────────────────────────────────────────────────────────────────
+.streamlit/
+
+
+# Local datasets / generated artifacts
+data/*.db
+data/*.sqlite3
+data/**/*.zip
+
+# Local reports / environment
+HAR_Project_Complete_Flaws_Report.md

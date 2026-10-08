@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>HAR · Real-Time Smartphone Sensor Streamer</title>
+  <style>
+    :root {
+      --bg-dark: #0e1117;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --primary: #667eea;
+      --primary-hover: #5a6fd1;
+      --accent: #00d4aa;
+      --danger: #ef5350;
+      --text: #e0e0e0;
+      --text-muted: #8c93a0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      padding: 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    header {
+      text-align: center;
+      padding: 12px 0 6px;
+    }
+    header h1 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--danger);
+      transition: background 0.3s;
+    }
+    .status-dot.connected { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .input-group label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .input-group input, .input-group select {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-outline { background: transparent; border: 1px solid var(--card-border); color: var(--text); }
+
+    .prediction-display {
+      text-align: center;
+      padding: 20px 12px;
+    }
+    .activity-emoji {
+      font-size: 3.5rem;
+      line-height: 1;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    }
+    .activity-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: 0.5px;
+    }
+    .activity-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .confidence-meter {
+      width: 100%;
+      height: 10px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 6px;
+      margin-top: 14px;
+      overflow: hidden;
+    }
+    .confidence-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #667eea, #00d4aa);
+      transition: width 0.4s ease;
+      border-radius: 6px;
+    }
+
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .sensor-val-card {
+      background: rgba(0,0,0,0.25);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.8rem;
+    }
+    .sensor-val-card strong {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .sensor-numbers {
+      font-family: monospace;
+      font-size: 0.85rem;
+      line-height: 1.35;
+      color: #64b5cd;
+    }
+
+    canvas {
+      width: 100%;
+      height: 90px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.3);
+      display: block;
+      margin-top: 10px;
+    }
+
+    .counter-badge {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📱 HAR Sensor Streamer</h1>
+      <p>50 Hz Tri-Axial Motion Ingestion</p>
+    </header>
+
+    <!-- Connection Card -->
+    <div class="card">
+      <div class="status-row">
+        <span class="status-badge">
+          <span id="statusDot" class="status-dot"></span>
+          <span id="statusText">Disconnected</span>
+        </span>
+        <span id="bufferInfo" style="font-size: 0.8rem; color: var(--text-muted);">Buffer: 0 / 128</span>
+      </div>
+
+      <div class="input-group">
+        <label for="wsUrl">WebSocket Endpoint</label>
+        <input type="text" id="wsUrl" placeholder="ws://localhost:8000/ws/predict" />
+      </div>
+
+      <div class="input-group">
+        <label for="modelSelect">Target Model</label>
+        <select id="modelSelect">
+          <option value="logistic_regression">Logistic Regression</option>
+          <option value="random_forest">Random Forest</option>
+          <option value="gradient_boosting">Gradient Boosting</option>
+          <option value="svm">SVM</option>
+          <option value="xgboost">XGBoost</option>
+          <option value="lightgbm">LightGBM</option>
+          <option value="ensemble">Ensemble</option>
+          <option value="nn_model">Neural Network</option>
+          <option value="cnn_lstm">CNN-LSTM (Raw Window)</option>
+        </select>
+      </div>
+
+      <button id="toggleBtn" class="btn btn-primary">Start Streaming</button>
+      <button id="simulateBtn" class="btn btn-outline" style="margin-top: 8px;">Simulate Sensor Walk</button>
+    </div>
+
+    <!-- Prediction Card -->
+    <div class="card prediction-display">
+      <div id="activityEmoji" class="activity-emoji">🏃</div>
+      <div id="activityName" class="activity-title">AWAITING STREAM</div>
+      <div id="confidenceText" class="activity-sub">Confidence: 0.0% · Smoothed: No</div>
+      <div class="confidence-meter">
+        <div id="confidenceBar" class="confidence-fill"></div>
+      </div>
+      <div class="counter-badge" id="statsBadge">Packets Sent: 0 · Inferred: 0 ms</div>
+    </div>
+
+    <!-- Real-Time Sensor Telemetry Card -->
+    <div class="card">
+      <h3 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Live Sensor Readings</h3>
+      <div class="sensor-grid">
+        <div class="sensor-val-card">
+          <strong>Acc (Body + Grav)</strong>
+          <div class="sensor-numbers" id="totalAccText">X: 0.00<br>Y: 0.00<br>Z: 0.00</div>
+        </div>
+        <div class="sensor-val-card">
+          <strong>Gyro (rad/s)</strong>
+          <div class="sensor-numbers" id="gyroText">X: 0.00<br>Y: 0.00<br>Z: 0.00</div>
+        </div>
+      </div>
+      <canvas id="liveChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    // Emoji dictionary
+    const EMOJIS = {
+      "WALKING": "🚶",
+      "WALKING_UPSTAIRS": "⬆️",
+      "WALKING_DOWNSTAIRS": "⬇️",
+      "SITTING": "🪑",
+      "STANDING": "🧍",
+      "LAYING": "🛏️",
+      "UNKNOWN": "❓"
+    };
+
+    // Auto-detect host for WebSocket
+    const defaultHost = window.location.host || "localhost:8000";
+    const defaultProto = window.location.protocol === "https:" ? "wss:" : "ws:";
+    document.getElementById("wsUrl").value = `${defaultProto}//${defaultHost}/ws/predict`;
+
+    let socket = null;
+    let isStreaming = false;
+    let packetsSent = 0;
+
+    // 128 samples buffer for 9 channels
+    const BUFFER_SIZE = 128;
+    const HOP_SIZE = 64; // 50% overlap
+    let sensorBuffer = {
+      body_acc_x: [], body_acc_y: [], body_acc_z: [],
+      body_gyro_x: [], body_gyro_y: [], body_gyro_z: [],
+      total_acc_x: [], total_acc_y: [], total_acc_z: []
+    };
+
+    // Canvas line plot history
+    const waveHistory = [];
+    const MAX_WAVE = 60;
+    const canvas = document.getElementById("liveChart");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth * window.devicePixelRatio;
+      canvas.height = canvas.clientHeight * window.devicePixelRatio;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function drawChart() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (waveHistory.length < 2) return;
+
+      ctx.strokeStyle = "#00d4aa";
+      ctx.lineWidth = 2 * window.devicePixelRatio;
+      ctx.beginPath();
+
+      const step = canvas.width / (MAX_WAVE - 1);
+      const midY = canvas.height / 2;
+
+      for (let i = 0; i < waveHistory.length; i++) {
+        const x = i * step;
+        const normalized = (waveHistory[i] - 1.0) * 40; // centered at ~1g
+        const y = Math.max(5, Math.min(canvas.height - 5, midY - normalized));
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // UI Updates
+    function setStatus(connected, text) {
+      const dot = document.getElementById("statusDot");
+      const stText = document.getElementById("statusText");
+      if (connected) {
+        dot.classList.add("connected");
+        stText.textContent = text || "Streaming Live";
+      } else {
+        dot.classList.remove("connected");
+        stText.textContent = text || "Disconnected";
+      }
+    }
+
+    function updatePrediction(data) {
+      const act = data.smoothed_activity || data.activity_name || "UNKNOWN";
+      const conf = (data.smoothed_confidence !== undefined && data.smoothed_confidence !== null)
+        ? data.smoothed_confidence
+        : (data.confidence || 0);
+
+      document.getElementById("activityEmoji").textContent = EMOJIS[act] || "🏃";
+      document.getElementById("activityName").textContent = act.replace("_", " ");
+      document.getElementById("confidenceText").textContent =
+        `Confidence: ${(conf * 100).toFixed(1)}% · Smoothed: ${data.is_smoothed ? "Yes" : "No"}`;
+      document.getElementById("confidenceBar").style.width = `${Math.min(100, conf * 100)}%`;
+      document.getElementById("statsBadge").textContent =
+        `Packets Sent: ${packetsSent} · Latency: ${data.inference_time_ms ? data.inference_time_ms.toFixed(1) : 0} ms`;
+    }
+
+    // Process device motion event
+    function handleMotion(event) {
+      if (!isStreaming || !socket || socket.readyState !== WebSocket.OPEN) return;
+
+      const accGrav = event.accelerationIncludingGravity || { x: 0, y: 0, z: 9.8 };
+      const acc = event.acceleration || { x: 0, y: 0, z: 0 };
+      const gyro = event.rotationRate || { alpha: 0, beta: 0, gamma: 0 };
+
+      // Convert m/s^2 to g approx for UCI format
+      const totX = accGrav.x ? accGrav.x / 9.80665 : 0;
+      const totY = accGrav.y ? accGrav.y / 9.80665 : 0;
+      const totZ = accGrav.z ? accGrav.z / 9.80665 : 1;
+
+      const bX = acc.x ? acc.x / 9.80665 : (totX - 0);
+      const bY = acc.y ? acc.y / 9.80665 : (totY - 0);
+      const bZ = acc.z ? acc.z / 9.80665 : (totZ - 1);
+
+      // Rotation rate in deg/s -> rad/s
+      const deg2rad = Math.PI / 180;
+      const gX = (gyro.beta || 0) * deg2rad;
+      const gY = (gyro.gamma || 0) * deg2rad;
+      const gZ = (gyro.alpha || 0) * deg2rad;
+
+      // Update text displays
+      document.getElementById("totalAccText").innerHTML = `X: ${totX.toFixed(2)}<br>Y: ${totY.toFixed(2)}<br>Z: ${totZ.toFixed(2)}`;
+      document.getElementById("gyroText").innerHTML = `X: ${gX.toFixed(2)}<br>Y: ${gY.toFixed(2)}<br>Z: ${gZ.toFixed(2)}`;
+
+      // Update wave
+      const mag = Math.sqrt(totX * totX + totY * totY + totZ * totZ);
+      waveHistory.push(mag);
+      if (waveHistory.length > MAX_WAVE) waveHistory.shift();
+      drawChart();
+
+      // Buffer
+      sensorBuffer.body_acc_x.push(bX);
+      sensorBuffer.body_acc_y.push(bY);
+      sensorBuffer.body_acc_z.push(bZ);
+      sensorBuffer.body_gyro_x.push(gX);
+      sensorBuffer.body_gyro_y.push(gY);
+      sensorBuffer.body_gyro_z.push(gZ);
+      sensorBuffer.total_acc_x.push(totX);
+      sensorBuffer.total_acc_y.push(totY);
+      sensorBuffer.total_acc_z.push(totZ);
+
+      document.getElementById("bufferInfo").textContent = `Buffer: ${sensorBuffer.body_acc_x.length} / ${BUFFER_SIZE}`;
+
+      if (sensorBuffer.body_acc_x.length >= BUFFER_SIZE) {
+        const payload = {
+          action: "raw_sensor",
+          channels: {
+            body_acc_x: sensorBuffer.body_acc_x.slice(0, BUFFER_SIZE),
+            body_acc_y: sensorBuffer.body_acc_y.slice(0, BUFFER_SIZE),
+            body_acc_z: sensorBuffer.body_acc_z.slice(0, BUFFER_SIZE),
+            body_gyro_x: sensorBuffer.body_gyro_x.slice(0, BUFFER_SIZE),
+            body_gyro_y: sensorBuffer.body_gyro_y.slice(0, BUFFER_SIZE),
+            body_gyro_z: sensorBuffer.body_gyro_z.slice(0, BUFFER_SIZE),
+            total_acc_x: sensorBuffer.total_acc_x.slice(0, BUFFER_SIZE),
+            total_acc_y: sensorBuffer.total_acc_y.slice(0, BUFFER_SIZE),
+            total_acc_z: sensorBuffer.total_acc_z.slice(0, BUFFER_SIZE)
+          },
+          model_name: document.getElementById("modelSelect").value,
+          use_smoothing: true
+        };
+
+        socket.send(JSON.stringify(payload));
+        packetsSent++;
+
+        // Shift by HOP_SIZE
+        for (const key in sensorBuffer) {
+          sensorBuffer[key] = sensorBuffer[key].slice(HOP_SIZE);
+        }
+      }
+    }
+
+    async function startStreaming() {
+      // Check iOS 13+ motion permission
+      if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
+        try {
+          const perm = await DeviceMotionEvent.requestPermission();
+          if (perm !== "granted") {
+            alert("Motion sensor permission was denied.");
+            return;
+          }
+        } catch (e) {
+          console.warn("Permission request error:", e);
+        }
+      }
+
+      const wsUrl = document.getElementById("wsUrl").value.trim();
+      setStatus(false, "Connecting…");
+
+      socket = new WebSocket(wsUrl);
+
+      socket.onopen = () => {
+        isStreaming = true;
+        setStatus(true, "Streaming Live");
+        document.getElementById("toggleBtn").textContent = "Stop Streaming";
+        document.getElementById("toggleBtn").className = "btn btn-danger";
+        window.addEventListener("devicemotion", handleMotion, true);
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.activity_name || data.smoothed_activity) {
+            updatePrediction(data);
+          }
+        } catch (err) {
+          console.error("Parse error:", err);
+        }
+      };
+
+      socket.onclose = () => {
+        stopStreaming();
+      };
+
+      socket.onerror = (err) => {
+        console.error("WebSocket error:", err);
+        stopStreaming();
+      };
+    }
+
+    function stopStreaming() {
+      isStreaming = false;
+      if (socket) {
+        socket.close();
+        socket = null;
+      }
+      window.removeEventListener("devicemotion", handleMotion, true);
+      setStatus(false, "Disconnected");
+      document.getElementById("toggleBtn").textContent = "Start Streaming";
+      document.getElementById("toggleBtn").className = "btn btn-primary";
+    }
+
+    document.getElementById("toggleBtn").addEventListener("click", () => {
+      if (isStreaming) {
+        stopStreaming();
+      } else {
+        startStreaming();
+      }
+    });
+
+    // Desktop simulator button
+    document.getElementById("simulateBtn").addEventListener("click", () => {
+      const wsUrl = document.getElementById("wsUrl").value.trim();
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        const simSocket = new WebSocket(wsUrl);
+        simSocket.onopen = () => {
+          simSocket.send(JSON.stringify({
+            action: "simulate",
+            activity_hint: "WALKING",
+            model_name: document.getElementById("modelSelect").value
+          }));
+        };
+        simSocket.onmessage = (e) => {
+          const data = JSON.parse(e.data);
+          updatePrediction(data);
+          simSocket.close();
+        };
+      } else {
+        socket.send(JSON.stringify({
+          action: "simulate",
+          activity_hint: "WALKING",
+          model_name: document.getElementById("modelSelect").value
+        }));
+      }
+    });
+  </script>
+</body>
+</html>
